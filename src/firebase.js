@@ -3,6 +3,8 @@ import { getAuth,signInAnonymously,setPersistence,browserLocalPersistence,connec
 import { getFirestore,connectFirestoreEmulator,doc,collection,query,limit,onSnapshot,runTransaction,serverTimestamp } from 'firebase/firestore';
 import { initialState,reserveShot,settleShot } from './state.js';
 import { compareEntries } from './scoring.js';
+import { publicEntry } from './public-profile.js';
+export { publicEntry } from './public-profile.js';
 export const PRACTICE=new URLSearchParams(location.search).get('practice')==='1';
 const emulated=['localhost','127.0.0.1'].includes(location.hostname)&&new URLSearchParams(location.search).get('emulator')==='1';
 const app=initializeApp({apiKey:'AIzaSyAgPwyZ2QvOA78bXENscLy0xGZ_jFxshck',authDomain:'arenales-pegball.firebaseapp.com',projectId:emulated?'demo-arenales-pegball':'arenales-pegball',storageBucket:'arenales-pegball.firebasestorage.app',messagingSenderId:'342719252512',appId:'1:342719252512:web:b6268e1850ad95c1fd5445'});
@@ -10,7 +12,6 @@ const auth=getAuth(app),db=getFirestore(app);
 if(emulated){connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});connectFirestoreEmulator(db,'127.0.0.1',8080);}
 const configRef=doc(db,'event','current');
 let uid,round,localGame;const practiceKey='arenales-practice-v1';
-export function publicEntry(s,time=null){return {uid:s.uid,roundId:s.roundId,displayName:`${s.profile.name.trim()} ${s.profile.surname.trim().slice(0,1).toUpperCase()}.`,score:s.score,used:s.used,status:s.status,finishedAt:s.status==='active'?null:time,updatedAt:time};}
 export function sortRanking(rows,official=true){return rows.filter(r=>!official||r.status!=='active').sort(compareEntries);}
 export async function connect(){
  if(PRACTICE){uid='practice';round={roundId:'practice',number:0};try{localGame=JSON.parse(localStorage.getItem(practiceKey));}catch{localGame=null;}return {uid,round};}

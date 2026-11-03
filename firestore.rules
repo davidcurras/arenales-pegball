@@ -27,6 +27,6 @@ service cloud.firestore {
     allow create,update: if signed() && request.auth.uid==u && current(r) && validScore(request.resource.data,r,u);
    }
   }
-  function validScore(d,r,u){let g=getAfter(/databases/$(database)/documents/rounds/$(r)/games/$(u)).data;return d.keys().hasOnly(['uid','roundId','displayName','score','used','status','finishedAt','updatedAt']) && d.uid==u && d.roundId==r && d.displayName is string && d.displayName.size()>0 && d.displayName.size()<=84 && d.score==g.score && d.used==g.used && d.status==g.status && d.updatedAt==request.time && d.finishedAt==g.finishedAt;}
+  function validScore(d,r,u){let g=getAfter(/databases/$(database)/documents/rounds/$(r)/games/$(u)).data;return d.keys().hasOnly(['uid','roundId','displayName','school','town','score','used','status','finishedAt','updatedAt']) && d.uid==u && d.roundId==r && d.displayName is string && d.displayName.size()>0 && d.displayName.size()<=84 && (!('school' in d) || (text(d.school) && d.school==g.profile.school)) && (!('town' in d) || (text(d.town) && d.town==g.profile.town)) && d.score==g.score && d.used==g.used && d.status==g.status && d.updatedAt==request.time && d.finishedAt==g.finishedAt;}
  }
 }

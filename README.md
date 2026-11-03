@@ -22,7 +22,7 @@ La práctica conserva su partida en localStorage y nunca escribe puntajes oficia
 
 ```text
 index.html                 juego y registro
-ranking.html               Top 3 oficial para proyección
+ranking.html               podio Top 3 y tabla Top 10 oficial para proyección
 admin.html                 nueva ronda con confirmación
 src/
   game.js                  escena Phaser, dibujo vectorial, entrada táctil
@@ -66,18 +66,18 @@ Vite sólo empaqueta los tres HTML y sus dependencias locales. Phaser renderiza,
 event/current                         {roundId, number, updatedAt}
 rounds/{roundId}                       {number, createdAt}
 rounds/{roundId}/games/{anonymousUid}   partida privada con datos personales
-rounds/{roundId}/scores/{anonymousUid}  proyección pública sin escuela/localidad/apellido completo
+rounds/{roundId}/scores/{anonymousUid}  proyección pública con nombre abreviado, escuela y localidad
 ```
 
 Cada navegador usa una identidad anónima persistente. El registro crea una única partida por UID y ronda mediante transacción. Antes de lanzar, otra transacción incrementa los tiros usados y guarda ángulo y fase de la canasta en `inFlight`. El resultado actualiza partida y proyección pública atómicamente. Los números de revisión evitan que respuestas repetidas o dos pestañas consuman tiros adicionales.
 
 Si se cierra el navegador, se recupera el estado del servidor. Un tiro reservado se reproduce desde su comienzo con el mismo ángulo, fase y pegs restantes: consume el tiro ya reservado y no permite cambiar su trayectoria. No se ofrecen tiros nuevos sin confirmar la reserva en el servidor. Un resultado sin conexión muestra el error y bloquea el siguiente lanzamiento hasta guardarse; se puede reintentar y al reconectar se vuelve a intentar. Una recarga recupera el tiro pendiente incluso si la respuesta de guardado anterior se perdió.
 
-El ranking escucha hasta 100 participantes de la ronda (el evento prevé unos 50), ordena en el cliente y muestra el Top 3 oficial únicamente de partidas finalizadas. Desempate: mayor puntaje, menos bolas utilizadas, finalización de servidor más temprana. La posición provisional incluye activas y finalizadas y está identificada como tal. No requiere índices compuestos.
+El ranking escucha hasta 100 participantes de la ronda (el evento prevé unos 50), ordena en el cliente y muestra el podio Top 3 y una tabla Top 10 debajo, únicamente de partidas finalizadas. Desempate: mayor puntaje, menos bolas utilizadas, finalización de servidor más temprana. La posición provisional incluye activas y finalizadas y está identificada como tal. No requiere índices compuestos.
 
 ## Seguridad y límites acordados
 
-- Los datos personales sólo los lee su UID; no existe consulta pública de partidas privadas. Los documentos públicos no contienen el apellido completo, escuela o localidad.
+- La partida completa sólo la lee su UID; no existe consulta pública de partidas privadas. Por decisión de organización, el ranking público muestra nombre, inicial del apellido, escuela y localidad. El apellido completo sigue en el documento privado. El aviso del registro informa qué datos se publican.
 - Las reglas validan campos, tipos, rangos, propietario, avance monotónico, máximo cinco tiros, rondas vigentes y correspondencia entre partida y ranking. No hay permisos globales ni borrados.
 - Por pedido explícito, el administrador no tiene login visible ni privilegios especiales: cualquier identidad anónima puede iniciar la siguiente ronda. **Conocer la URL o estudiar el cliente permite reiniciar el evento.** Las reglas no pretenden proteger este acceso. El reset crea una ronda nueva y conserva todo el historial.
 - Los puntajes y las colisiones se calculan en el cliente. Las reglas limitan las transiciones, pero no ofrecen validación física autoritativa ni protección contra un usuario técnico que fabrique un resultado. Esto requeriría un servidor de confianza, fuera del alcance acordado.
@@ -140,3 +140,7 @@ El sitio y las reglas se publicaron el 3 de noviembre de 2026. Se verificaron la
 5. Cada participante apunta arrastrando y suelta para lanzar. Debe esperar “puntaje guardado” entre tiros; si falla internet, reconectar y reintentar.
 6. Otorgar premios según el Top 3 de **partidas finalizadas**. El indicador provisional del jugador incluye partidas activas y no reemplaza esa clasificación.
 7. Mantener la URL de administración entre organizadores para reducir reinicios accidentales; eso no constituye seguridad frente a usuarios técnicos.
+
+Actualización del ranking: se agregó el Top 10 debajo del podio con posición, nombre público y puntaje. Prueba adicional en `tests/browser/ranking.spec.js`: 13 partidas finalizadas y una activa en emuladores; se verificaron límite de diez, exclusión de activas, desempate, cambios en vivo, ronda nueva y pantalla móvil sin desborde horizontal.
+
+Actualización de datos públicos: escuela y localidad se muestran debajo del nombre en podio, Top 10 y listas Top 3. Las reglas exigen que coincidan con el registro privado cuando están presentes; se toleran documentos anteriores sin estos campos. `node scripts/backfill-ranking-details.js` revisa la ronda actual sin escribir; `--apply` completa únicamente esos dos campos en puntuaciones ya existentes, manteniendo puntajes, tiros, estados y fechas. Usa la sesión autorizada del CLI y está limitado a arenales-pegball.

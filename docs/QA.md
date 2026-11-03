@@ -10,7 +10,7 @@ Fecha: 3 de noviembre de 2026. Entorno: macOS ARM64, Node 24, Chromium real, Fir
 | Distribución | 60 posiciones únicas dentro del contorno; 48 cyan y 12 doradas |
 | Nivel ganable | Simulación completa con cuatro tiros razonables, 12/12 objetivos |
 | Reglas Firestore | 4 pruebas de integración aprobadas, con casos de rechazo |
-| Privacidad | Otros UIDs no pueden leer la partida; ranking sin datos privados |
+| Privacidad | Otros UIDs no pueden leer la partida; ranking con nombre abreviado, escuela y localidad; apellido completo privado |
 | Recuperación | Tiro reservado recuperado desde Firestore; reproducción idéntica |
 | Carga | 50 clientes simultáneos, 1.100 escrituras totales, todos finalizados |
 | Táctil móvil | Entrada real touch vía Chromium, impactos, puntos y dorados |
@@ -32,3 +32,13 @@ La duración de la prueba de carga y los eventos de listener se registran en `lo
 Capturas: `mobile-registration.png`, `mobile-game.png`, `mobile-after-shot.png`, `desktop-registration.png`, `ranking-desktop.png`. El ranking de ejemplo proviene únicamente del emulador.
 
 Hosting y reglas publicados y verificados en las tres URLs reales de arenales-pegball.web.app. Se comprobó Authentication anónimo, lectura de ronda y listeners en producción, sin registrar jugadores de prueba. Los recorridos de partidas completas, escrituras de resultados, carga y reset se ejecutaron en emuladores. No se han probado dispositivos físicos, Safari ni redes celulares reales.
+
+## Actualización: Top 10 debajo del podio
+
+Prueba adicional Chromium aprobada con 13 partidas finalizadas y una activa, creadas únicamente en emuladores. Se verificaron diez filas como máximo, orden y desempate, exclusión de activas, cambio de líder en tiempo real tanto en podio como en tabla, ronda nueva vacía y vista móvil sin desborde horizontal. Capturas locales: `ranking-top10-desktop.png` y `ranking-top10-mobile.png`.
+
+## Actualización: escuela y localidad públicas
+
+El registro informa su publicación. La proyección pública incorpora únicamente escuela y localidad, además del nombre abreviado y datos de puntaje existentes. Se ejecutaron 18 tests de lógica/físicas y 5 pruebas de Firestore (incluida carga de 50 clientes). Se rechazan escuelas/localidades que no coincidan con el perfil privado y campos adicionales de apellido. El helper omite datos ausentes en documentos antiguos sin inventarlos.
+
+Publicación de escuela/localidad completada en Firebase. Se incorporaron esos dos campos en los cuatro puntajes existentes de la ronda actual mediante actualización parcial con máscara; no se modificaron puntuación, tiros, estados ni fechas. Los cinco recorridos de navegador aprobaron, incluyendo nombres de escuela largos, actualizaciones en vivo y filas antiguas sin metadatos.

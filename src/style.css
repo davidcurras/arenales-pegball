@@ -11,3 +11,21 @@
 .scoreboard span.remaining{font-size:7px;letter-spacing:.3px;margin:5px 0 0;color:#c7b77c}
 .overlay{flex-direction:column;justify-content:flex-start;overflow-y:auto;overscroll-behavior:contain}.registration-card,.result-card{flex-shrink:0;margin:auto 0}
 @media(max-width:800px){.registration-card input{font-size:16px}.game-page{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}.arena-layout{height:calc(100dvh - 57px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}.game-shell:fullscreen{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}}
+/* Clasificación general debajo del podio. */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.top-ten{max-width:1000px;margin:40px auto 28px;text-align:left;border:1px solid #2d4e67;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#11334b70,#081f3570)}
+.top-ten-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:24px;border-bottom:1px solid #2d4e67}
+.top-ten-heading h2{font-size:24px;letter-spacing:-.7px;margin:0}
+.top-ten-heading>span{font-size:8px;letter-spacing:1.3px;color:var(--cyan);white-space:nowrap}
+.top-ten-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.top-ten-table th{padding:14px 24px;font-size:9px;letter-spacing:1.4px;color:var(--muted);font-weight:600;background:#04182a66}
+.top-ten-table th:first-child{width:90px}.top-ten-table th:last-child{width:145px;text-align:right}
+.top-ten-table td{padding:13px 24px;border-top:1px solid #2d4e6755;font-size:14px}
+.top-ten-place{color:#839fb5;font-variant-numeric:tabular-nums}.top-ten-name{color:#e1eef7;font-weight:600;overflow-wrap:anywhere}.top-ten-table .top-ten-points{text-align:right;color:var(--gold);font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.top-ten-podium{background:#ffd04b05}.top-ten-podium .top-ten-place{color:var(--cyan)}.top-ten-podium:first-child .top-ten-place{color:var(--gold)}
+.top-ten-table .top-ten-empty{text-align:center;color:var(--muted);padding:32px 24px;font-size:12px;line-height:1.7;font-weight:400}
+@media(max-width:800px){.top-ten{margin-top:28px;border-radius:12px}.top-ten-heading{padding:18px 16px;align-items:flex-start;flex-direction:column;gap:8px}.top-ten-heading h2{font-size:22px}.top-ten-table th,.top-ten-table td{padding:12px 16px}.top-ten-table th:first-child{width:60px}.top-ten-table th:last-child{width:100px}.top-ten-table td{font-size:12px}.top-ten-table .top-ten-points{font-size:15px}}
+.player-details{display:block;color:var(--muted);font-size:11px;font-weight:400;line-height:1.5;letter-spacing:0;overflow-wrap:anywhere}
+.podium-card h2:has(+.player-details){margin-bottom:8px}.podium-card>.player-details{margin:0 0 15px;min-height:33px}
+.top-ten-name>.player-details{margin-top:4px}.rank-name>.player-details{margin-top:4px;font-size:9px}
+@media(max-width:800px){.podium-card>.player-details{font-size:9px;min-height:27px;margin-bottom:12px}.top-ten-name>.player-details{font-size:10px}}
