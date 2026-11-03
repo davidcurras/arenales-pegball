@@ -1,0 +1,26 @@
+{
+  "base": "https://arenales-pegball.web.app",
+  "checkedAt": "2026-11-03T11:53:08.902Z",
+  "pages": [
+    {
+      "path": "/",
+      "status": 200,
+      "state": "Conectado · listo para jugar",
+      "csp": true
+    },
+    {
+      "path": "/ranking.html",
+      "status": 200,
+      "state": "Actualización en tiempo real · conectado",
+      "csp": true
+    },
+    {
+      "path": "/admin.html",
+      "status": 200,
+      "state": "Panel conectado",
+      "csp": true
+    }
+  ],
+  "gameRecordsCreated": 0,
+  "javascriptErrors": []
+}

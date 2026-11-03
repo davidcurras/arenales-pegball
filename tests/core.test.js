@@ -1,0 +1,18 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {shotScore,completionBonus,compareEntries} from '../src/scoring.js';
+import {initialState,reserveShot,settleShot,canPlayRound} from '../src/state.js';
+import {GOLD_IDS,PEGS,contains} from '../src/level.js';
+const profile={name:'Ana',surname:'Pérez',school:'Escuela 1',town:'Arenales'};
+const initial=()=>initialState('r1',profile,'u1');
+test('60 pegs únicos en el contorno: 48 normales, 12 dorados',()=>{assert.equal(PEGS.length,60);assert.equal(new Set(PEGS.map(p=>`${p.x},${p.y}`)).size,60);assert.equal(PEGS.filter(p=>p.gold).length,12);assert.ok(PEGS.every(p=>contains(p.x,p.y)));});
+test('10 por normal y 50 por dorado',()=>assert.equal(shotScore(2,2).total,120));
+test('umbrales de combos excluyentes',()=>{assert.equal(shotScore(4,0).combo,0);assert.equal(shotScore(5,0).total,150);assert.equal(shotScore(9,0).combo,100);assert.equal(shotScore(10,0).total,400);});
+test('canasta duplica base y combo',()=>{assert.equal(shotScore(4,1,true).total,380);assert.equal(shotScore(8,2,true).total,960);});
+test('finalización y bolas sobrantes sin multiplicar',()=>{assert.equal(completionBonus(true,1),3000);assert.equal(completionBonus(true,5),1000);assert.equal(completionBonus(false,5),0);const r=settleShot(reserveShot(initial(),0,0),GOLD_IDS,true);assert.equal(r.state.score,(600+300)*2+3000);assert.equal(r.state.status,'won');});
+test('un impacto cuenta una sola vez y no se puede volver a puntuar',()=>{let s=settleShot(reserveShot(initial(),0,0),[1,1,1],false).state;assert.equal(s.score,10);s=settleShot(reserveShot(s,0,0),[1,1],true).state;assert.equal(s.score,10);});
+test('máximo cinco tiros y derrota',()=>{let s=initial();for(let i=0;i<5;i++)s=settleShot(reserveShot(s,0,0),[],false).state;assert.equal(s.status,'lost');assert.equal(s.used,5);assert.throws(()=>reserveShot(s,0,0));});
+test('victoria tiene prioridad sobre derrota en quinto tiro',()=>{let s=initial();for(let i=0;i<4;i++)s=settleShot(reserveShot(s,0,0),[],false).state;const r=settleShot(reserveShot(s,0,0),GOLD_IDS,false);assert.equal(r.state.status,'won');assert.equal(r.details.bonus,1000);});
+test('recuperación: tiro reservado sobrevive serialización y no concede tiro extra',()=>{const s=JSON.parse(JSON.stringify(reserveShot(initial(),.5,1200)));assert.equal(s.used,1);assert.throws(()=>reserveShot(s,.3,0));const result=settleShot(s,[1,2],false).state;assert.equal(result.used,1);assert.equal(result.score,20);assert.throws(()=>settleShot(result,[1],false));});
+test('sólo una ronda nueva permite otra partida',()=>{const s=initial();assert.equal(canPlayRound(s,'r1'),false);assert.equal(canPlayRound(s,'r2'),true);assert.equal(canPlayRound(null,'r1'),true);});
+test('desempate: score, menos tiros, fecha más temprana',()=>{const rows=[{uid:'a',score:100,used:3,finishedAt:30},{uid:'b',score:100,used:2,finishedAt:20},{uid:'c',score:100,used:2,finishedAt:10},{uid:'d',score:200,used:5,finishedAt:50}].sort(compareEntries);assert.deepEqual(rows.map(r=>r.uid),['d','c','b','a']);});
+test('rechaza valores inválidos',()=>{assert.throws(()=>shotScore(-1,0));assert.throws(()=>shotScore(0,13));assert.throws(()=>completionBonus(true,6));assert.throws(()=>reserveShot(initial(),NaN,0));assert.throws(()=>reserveShot(initial(),2,0));});

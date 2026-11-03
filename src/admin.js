@@ -1,0 +1,4 @@
+import { connect,watchRound,resetRound } from './firebase.js';
+import { $,text,message,errorMessage } from './ui.js';
+try{await connect();watchRound(r=>{text('#round-number',String(r.number).padStart(2,'0'));text('#round-id',r.roundId);$('#reset').disabled=false;},e=>message(errorMessage(e),'error'));message('Panel conectado');}catch(e){message(errorMessage(e),'error');}
+$('#reset').addEventListener('click',()=>$('#confirm-reset').showModal());$('#cancel-reset').addEventListener('click',()=>$('#confirm-reset').close());$('#confirm-button').addEventListener('click',async()=>{$('#confirm-button').disabled=true;$('#reset').disabled=true;try{const n=await resetRound();$('#confirm-reset').close();message(`Operación exitosa. Ronda ${n} iniciada; resultados anteriores conservados.`);}catch(e){message(`No se pudo reiniciar. ${errorMessage(e)}`,'error');}finally{$('#confirm-button').disabled=false;$('#reset').disabled=false;}});

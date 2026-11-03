@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signed(){return request.auth != null;}
+  function current(r){return get(/databases/$(database)/documents/event/current).data.roundId == r;}
+  function gold(){return [0,4,8,12,16,20,24,28,32,36,40,44];}
+  function validFlight(f){return f == null || (f is map && f.keys().hasOnly(['angle','phase']) && f.angle is number && f.angle >= -1.15 && f.angle <= 1.15 && f.phase is number && f.phase >= 0 && f.phase <= 100000);}
+  function profile(p){return p is map && p.keys().hasAll(['name','surname','school','town']) && p.keys().hasOnly(['name','surname','school','town']) && text(p.name) && text(p.surname) && text(p.school) && text(p.town);}
+  function text(s){return s is string && s.size()>0 && s.size()<=80;}
+  function validGame(d,r,u){return d.keys().hasOnly(['roundId','uid','profile','used','score','removed','status','inFlight','revision','finishedAt']) && d.uid == u && d.roundId == r && profile(d.profile) && d.used is int && d.used >= 0 && d.used <= 5 && d.score is int && d.score >= 0 && d.score <= 10000 && d.removed is list && d.removed.size() <= 60 && d.removed.toSet().size() == d.removed.size() && d.removed.toSet().hasOnly([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59]) && d.revision is int && validFlight(d.inFlight) && ((d.status == 'active' && d.finishedAt == null && !d.removed.hasAll(gold()) && (d.used<5 || d.inFlight!=null)) || (d.status == 'won' && d.removed.hasAll(gold()) && d.inFlight==null && d.finishedAt==request.time) || (d.status == 'lost' && d.used==5 && !d.removed.hasAll(gold()) && d.inFlight==null && d.finishedAt==request.time));}
+  match /event/current {
+   allow read: if true;
+   allow create: if signed() && request.resource.data.keys().hasOnly(['roundId','number','updatedAt']) && request.resource.data.number==1 && request.resource.data.updatedAt==request.time && getAfter(/databases/$(database)/documents/rounds/$(request.resource.data.roundId)).data.number==1;
+   allow update: if signed() && request.resource.data.keys().hasOnly(['roundId','number','updatedAt']) && request.resource.data.number==resource.data.number+1 && request.resource.data.roundId!=resource.data.roundId && request.resource.data.updatedAt==request.time && getAfter(/databases/$(database)/documents/rounds/$(request.resource.data.roundId)).data.number==request.resource.data.number;
+  }
+  match /rounds/{r} {
+   allow read: if true;
+   allow create: if signed() && request.resource.data.keys().hasOnly(['number','createdAt']) && request.resource.data.createdAt==request.time && getAfter(/databases/$(database)/documents/event/current).data.roundId==r && getAfter(/databases/$(database)/documents/event/current).data.number==request.resource.data.number;
+   match /games/{u} {
+    allow get: if signed() && request.auth.uid==u;
+    allow create: if signed() && request.auth.uid==u && current(r) && validGame(request.resource.data,r,u) && request.resource.data.used==0 && request.resource.data.score==0 && request.resource.data.removed.size()==0 && request.resource.data.inFlight==null && request.resource.data.revision==0;
+    allow update: if signed() && request.auth.uid==u && current(r) && validGame(request.resource.data,r,u) && resource.data.status=='active' && request.resource.data.profile==resource.data.profile && request.resource.data.revision==resource.data.revision+1 && ((resource.data.inFlight==null && request.resource.data.inFlight!=null && request.resource.data.used==resource.data.used+1 && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used','inFlight','revision'])) || (resource.data.inFlight!=null && request.resource.data.inFlight==null && request.resource.data.used==resource.data.used && request.resource.data.score>=resource.data.score && request.resource.data.removed.hasAll(resource.data.removed) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['removed','score','status','inFlight','revision','finishedAt'])));
+   }
+   match /scores/{u} {
+    allow get: if true;
+    allow list: if request.query.limit!=null && request.query.limit<=100;
+    allow create,update: if signed() && request.auth.uid==u && current(r) && validScore(request.resource.data,r,u);
+   }
+  }
+  function validScore(d,r,u){let g=getAfter(/databases/$(database)/documents/rounds/$(r)/games/$(u)).data;return d.keys().hasOnly(['uid','roundId','displayName','score','used','status','finishedAt','updatedAt']) && d.uid==u && d.roundId==r && d.displayName is string && d.displayName.size()>0 && d.displayName.size()<=84 && d.score==g.score && d.used==g.used && d.status==g.status && d.updatedAt==request.time && d.finishedAt==g.finishedAt;}
+ }
+}

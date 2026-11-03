@@ -1,0 +1,6 @@
+export const $=s=>document.querySelector(s);
+export const number=n=>new Intl.NumberFormat('es-AR').format(n);
+export function text(selector,value){$(selector).textContent=value;}
+export function message(value,type='ok'){const el=$('#sync');el.textContent=value;el.dataset.state=type;}
+export function renderRows(container,rows,empty='Todavía no hay partidas finalizadas.'){container.replaceChildren();if(!rows.length){const p=document.createElement('p');p.className='empty';p.textContent=empty;container.append(p);return;}rows.slice(0,3).forEach((r,i)=>{const row=document.createElement('div');row.className='rank-row';for(const [cls,value]of [['rank-place',String(i+1).padStart(2,'0')],['rank-name',r.displayName],['rank-points',number(r.score)]]){const el=document.createElement('span');el.className=cls;el.textContent=value;row.append(el);}container.append(row);});}
+export function errorMessage(e){console.error(e);if(e.code==='permission-denied')return 'Acceso denegado: revisá las reglas de Firebase. Tu tiro no se pierde.';if(e.code==='auth/configuration-not-found'||e.code==='auth/operation-not-allowed')return 'No se pudo iniciar el acceso anónimo. Revisá Authentication en Firebase.';return e.message?.includes('ronda')?e.message:'Sin conexión con Firebase. Revisá internet y reintentá; tu progreso se conserva.';}
